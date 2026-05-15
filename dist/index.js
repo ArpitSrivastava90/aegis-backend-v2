@@ -8,38 +8,42 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const express_session_1 = __importDefault(require("express-session"));
 const passport_1 = __importDefault(require("./config/passport"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const prisma_1 = require("./lib/prisma");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
-// Middlewares
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)());
 app.use((0, morgan_1.default)("dev"));
 app.use(express_1.default.json());
-// Passport
+// Session — only needed to bridge OAuth round trip
+app.use((0, express_session_1.default)({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 5 * 60 * 1000, // 5 mins — only needed during OAuth flow
+    },
+}));
 app.use(passport_1.default.initialize());
-// Health Check
+app.use(passport_1.default.session());
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "Aegis Backend is Healthy 🛡️" });
 });
-// Routes
 app.use("/api/auth", auth_routes_1.default);
-// Server
 app.listen(PORT, () => {
     console.log(`🛡️  Aegis running on http://localhost:${PORT}`);
 });
-// Graceful Shutdown
 process.on("SIGINT", async () => {
     await prisma_1.prisma.$disconnect();
-    console.log("DB disconnected");
     process.exit(0);
 });
 process.on("SIGTERM", async () => {
     await prisma_1.prisma.$disconnect();
-    console.log("DB disconnected");
     process.exit(0);
 });
 exports.default = app;
