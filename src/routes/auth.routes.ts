@@ -5,14 +5,10 @@ import jwt from "jsonwebtoken";
 const router = Router();
 
 // STEP 1: Trigger GitHub OAuth Login
-router.get("/github", (req: Request, res: Response, next: NextFunction) => {
-  // Save mobile app's current Expo URL in session before passport takes over
-  if (req.query.redirectUrl) {
-    (req.session as any).mobileRedirectUrl = req.query.redirectUrl as string;
-  }
-
+router.get("/github", (req, res, next) => {
   passport.authenticate("github", {
     scope: ["user:email"],
+    state: req.query.state as string,
   })(req, res, next);
 });
 
@@ -43,13 +39,7 @@ router.get(
         { expiresIn: "7d" },
       );
 
-      // Read from session → fallback to env var for production builds
-      const redirectBase =
-        (req.session as any).mobileRedirectUrl ||
-        `${process.env.DEEP_LINK_SCHEME}auth/callback`;
-
-      // Clean up session
-      delete (req.session as any).mobileRedirectUrl;
+      const redirectBase = req.query.state as string;
 
       return res.redirect(`${redirectBase}?token=${token}`);
     } catch (error) {
