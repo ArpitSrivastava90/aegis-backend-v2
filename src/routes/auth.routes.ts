@@ -4,26 +4,24 @@ import jwt from "jsonwebtoken";
 
 const router = Router();
 
-/**
- * STEP 1:
- * Trigger GitHub OAuth Login
- */
-router.get(
-  "/github",
-  passport.authenticate("github", {
-    session: false,
-  }),
-);
+// STEP 1: Trigger GitHub OAuth Login
+router.get("/github", (req: Request, res: Response, next: NextFunction) => {
+  // Save mobile app's current Expo URL in session before passport takes over
+  if (req.query.redirectUrl) {
+    (req.session as any).mobileRedirectUrl = req.query.redirectUrl as string;
+  }
 
-/**
- * STEP 2:
- * GitHub OAuth Callback
- */
+  passport.authenticate("github", {
+    scope: ["user:email"],
+  })(req, res, next);
+});
+
+// STEP 2: GitHub OAuth Callback
 router.get(
   "/github/callback",
   passport.authenticate("github", {
     session: false,
-    failureRedirect: "/auth/failure",
+    failureRedirect: "/api/auth/failure",
   }),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -34,10 +32,6 @@ router.get(
         avatar?: string | null;
       };
 
-      /**
-       * STEP 3:
-       * Generate Aegis JWT
-       */
       const token = jwt.sign(
         {
           id: user.id,
@@ -46,28 +40,25 @@ router.get(
           avatar: user.avatar,
         },
         process.env.JWT_SECRET!,
-        {
-          expiresIn: "7d",
-        },
+        { expiresIn: "7d" },
       );
 
-      /**
-       * STEP 4:
-       * Redirect back to mobile app
-       */
-      const redirectUrl = `${process.env.DEEP_LINK_SCHEME}?token=${token}`;
-      // deep link - work look at text file
-      return res.redirect(redirectUrl);
+      // Read from session → fallback to env var for production builds
+      const redirectBase =
+        (req.session as any).mobileRedirectUrl ||
+        `${process.env.DEEP_LINK_SCHEME}auth/callback`;
+
+      // Clean up session
+      delete (req.session as any).mobileRedirectUrl;
+
+      return res.redirect(`${redirectBase}?token=${token}`);
     } catch (error) {
       next(error);
     }
   },
 );
 
-/**
- * OPTIONAL:
- * OAuth Failure Route
- */
+// Failure Route
 router.get("/failure", (_req: Request, res: Response) => {
   return res.status(401).json({
     success: false,
