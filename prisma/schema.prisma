@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"  // or "mysql" / "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatar        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relationships
+  accounts      Account[]    
+  vaultItems    VaultItem[]  
+  uptimeChecks  UptimeCheck[]
+  notes         Note[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String  
+  provider          String  
+  providerAccountId String  
+  refresh_token     String? 
+  access_token      String? 
+  expires_at        Int?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VaultItem {
+  id          String   @id @default(cuid())
+  userId      String
+  service     String   
+  encryptedKey String  
+  iv          String   
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UptimeCheck {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  interval  Int      
+  isActive  Boolean  @default(true)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  content   String   
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
