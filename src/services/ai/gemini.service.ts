@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-// ✅ Use the current, active 2.x generation model
+
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 export const generatePRSummary = async (prData: string) => {
@@ -22,7 +22,8 @@ Keep response:
 - mobile-friendly
 - developer-focused
 - no unnecessary explanations
-
+- unwanted code , that can be removed
+- and do better
 PR Diff:
 ${prData}
 `;
@@ -35,3 +36,4 @@ ${prData}
 };
 
 
+//  test 
