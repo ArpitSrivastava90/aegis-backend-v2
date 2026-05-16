@@ -26,7 +26,7 @@ router.get("/repos", auth_middleware_1.authMiddleware, async (req, res) => {
         });
     }
 });
-//pending
+//* test done
 //GET /api/github/repos/:owner/:repo/pulls
 router.get("/repos/:owner/:repo/pulls", auth_middleware_1.authMiddleware, async (req, res) => {
     try {
@@ -51,7 +51,7 @@ router.get("/repos/:owner/:repo/pulls", auth_middleware_1.authMiddleware, async 
         });
     }
 });
-//  pending
+//* test done
 // GET /api/github/repos/:owner/:repo/pulls/:pullNumber/files
 router.get("/repos/:owner/:repo/pulls/:pullNumber/files", auth_middleware_1.authMiddleware, async (req, res) => {
     try {
@@ -76,7 +76,7 @@ router.get("/repos/:owner/:repo/pulls/:pullNumber/files", auth_middleware_1.auth
         });
     }
 });
-// AI route
+//* test done
 // POST /api/github/analyze/pr-summary
 router.post("/analyze/pr-summary", auth_middleware_1.authMiddleware, async (req, res) => {
     try {
@@ -97,6 +97,53 @@ router.post("/analyze/pr-summary", auth_middleware_1.authMiddleware, async (req,
         console.error("PR_SUMMARY_ERROR:", error);
         return res.status(500).json({
             message: "Failed to generate PR summary",
+        });
+    }
+});
+// POST /api/github/analyze/vulnerabilities
+// POST https://aegis-backend-v2-2.onrender.com/api/github/analyze/vulnerabilities
+router.post("/analyze/vulnerabilities", auth_middleware_1.authMiddleware, async (req, res) => {
+    try {
+        const userId = req.auth?.id;
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+        const { owner, repo, pullNumber } = req.body;
+        const prData = await (0, github_service_1.getPullRequestDetails)(userId, owner, repo, pullNumber);
+        const vulnerabilities = await (0, gemini_service_1.analyzePRVulnerabilities)(prData);
+        return res.status(200).json({
+            vulnerabilities,
+        });
+    }
+    catch (error) {
+        console.error("PR_VULNERABILITY_ERROR:", error);
+        return res.status(500).json({
+            message: "Failed to analyze vulnerabilities",
+        });
+    }
+});
+// POST https://aegis-backend-v2-2.onrender.com/api/github/analyze/risk-score
+router.post("/analyze/risk-score", auth_middleware_1.authMiddleware, async (req, res) => {
+    try {
+        const userId = req.auth?.id;
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+        const { owner, repo, pullNumber } = req.body;
+        const prData = await (0, github_service_1.getPullRequestDetails)(userId, owner, repo, pullNumber);
+        const riskAnalysis = await (0, gemini_service_1.generatePRRiskScore)(prData);
+        return res.status(200).json({
+            risk: riskAnalysis,
+        });
+    }
+    catch (error) {
+        console.error("PR_RISK_SCORE_ERROR:", error);
+        return res.status(500).json({
+            message: "Failed to generate risk score",
         });
     }
 });
