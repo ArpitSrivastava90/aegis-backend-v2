@@ -22,8 +22,7 @@ Keep response:
 - mobile-friendly
 - developer-focused
 - no unnecessary explanations
-- unwanted code , that can be removed
-- and do better
+
 PR Diff:
 ${prData}
 `;
