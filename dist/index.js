@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
+const http_1 = __importDefault(require("http"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const express_session_1 = __importDefault(require("express-session"));
 const passport_1 = __importDefault(require("./config/passport"));
@@ -14,6 +15,7 @@ const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const prisma_1 = require("./lib/prisma");
 const github_routes_1 = __importDefault(require("./routes/github.routes"));
 const github_webhook_routes_1 = __importDefault(require("./routes/github.webhook.routes"));
+const socket_1 = require("./socket");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -40,7 +42,9 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", auth_routes_1.default);
 app.use("/api/github", github_routes_1.default);
 app.use("/api/github/webhooks", github_webhook_routes_1.default);
-app.listen(PORT, () => {
+const server = http_1.default.createServer(app);
+(0, socket_1.initializeSocketServer)(server);
+server.listen(PORT, () => {
     console.log(`🛡️  Aegis running on http://localhost:${PORT}`);
 });
 process.on("SIGINT", async () => {
