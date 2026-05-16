@@ -20,11 +20,12 @@ const getGithubRepositories = async (userId) => {
             Accept: "application/vnd.github+json",
         },
     });
+    const data = await response.json();
     if (!response.ok) {
+        console.error("GITHUB API ERROR:", data);
         throw new Error("Failed to fetch repositories");
     }
-    const repos = await response.json();
-    return repos;
+    return data;
 };
 exports.getGithubRepositories = getGithubRepositories;
 const getRepositoryPullRequests = async (userId, owner, repo) => {

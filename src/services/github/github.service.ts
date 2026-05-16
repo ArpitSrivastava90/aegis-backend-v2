@@ -14,29 +14,28 @@ export const getGithubRepositories = async (userId: string) => {
     throw new Error("GitHub integration not found");
   }
 
-  const response = await fetch(
-    "https://api.github.com/user/repos",
-    {
-      headers: {
-        Authorization: `Bearer ${integration.accessToken}`,
-        Accept: "application/vnd.github+json",
-      },
-    }
-  );
+  const response = await fetch("https://api.github.com/user/repos", {
+    headers: {
+      Authorization: `Bearer ${integration.accessToken}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+
+  const data = await response.json();
 
   if (!response.ok) {
+    console.error("GITHUB API ERROR:", data);
+
     throw new Error("Failed to fetch repositories");
   }
 
-  const repos = await response.json();
-
-  return repos;
+  return data;
 };
 
 export const getRepositoryPullRequests = async (
   userId: string,
   owner: string,
-  repo: string
+  repo: string,
 ) => {
   const integration = await prisma.integration.findUnique({
     where: {
@@ -58,7 +57,7 @@ export const getRepositoryPullRequests = async (
         Authorization: `Bearer ${integration.accessToken}`,
         Accept: "application/vnd.github+json",
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -74,7 +73,7 @@ export const getPullRequestFiles = async (
   userId: string,
   owner: string,
   repo: string,
-  pullNumber: string
+  pullNumber: string,
 ) => {
   const integration = await prisma.integration.findUnique({
     where: {
@@ -96,7 +95,7 @@ export const getPullRequestFiles = async (
         Authorization: `Bearer ${integration.accessToken}`,
         Accept: "application/vnd.github+json",
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -111,14 +110,9 @@ export const getPullRequestDetails = async (
   userId: string,
   owner: string,
   repo: string,
-  pullNumber: string
+  pullNumber: string,
 ) => {
-  const files = await getPullRequestFiles(
-    userId,
-    owner,
-    repo,
-    pullNumber
-  );
+  const files = await getPullRequestFiles(userId, owner, repo, pullNumber);
 
   const formatted = files
     .map((file: any) => {
