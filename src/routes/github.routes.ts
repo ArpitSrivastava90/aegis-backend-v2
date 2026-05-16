@@ -6,7 +6,6 @@ import {
   getPullRequestFiles,
   getRepositoryPullRequests,
 } from "../services/github/github.service";
-import { analyzePRVulnerabilities, generatePRRiskScore, generatePRSummary } from "../services/ai/gemini.service";
 
 const router = Router();
 
@@ -80,9 +79,9 @@ router.get(
         });
       }
 
-   const owner = req.params.owner as string;
-const repo = req.params.repo as string;
-const pullNumber = req.params.pullNumber as string;
+      const owner = req.params.owner as string;
+      const repo = req.params.repo as string;
+      const pullNumber = req.params.pullNumber as string;
 
       const files = await getPullRequestFiles(userId, owner, repo, pullNumber);
 
@@ -129,88 +128,64 @@ router.post("/analyze/pr-summary", authMiddleware, async (req, res) => {
   }
 });
 
-
-
 // POST /api/github/analyze/vulnerabilities
 // POST https://aegis-backend-v2-2.onrender.com/api/github/analyze/vulnerabilities
-router.post(
-  "/analyze/vulnerabilities",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const userId = req.auth?.id;
+router.post("/analyze/vulnerabilities", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.auth?.id;
 
-      if (!userId) {
-        return res.status(401).json({
-          message: "Unauthorized",
-        });
-      }
-
-      const { owner, repo, pullNumber } = req.body;
-
-      const prData = await getPullRequestDetails(
-        userId,
-        owner,
-        repo,
-        pullNumber
-      );
-
-      const vulnerabilities =
-        await analyzePRVulnerabilities(prData);
-
-      return res.status(200).json({
-        vulnerabilities,
-      });
-    } catch (error) {
-      console.error("PR_VULNERABILITY_ERROR:", error);
-
-      return res.status(500).json({
-        message: "Failed to analyze vulnerabilities",
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
       });
     }
+
+    const { owner, repo, pullNumber } = req.body;
+
+    const prData = await getPullRequestDetails(userId, owner, repo, pullNumber);
+
+    const vulnerabilities = await analyzePRVulnerabilities(prData);
+
+    return res.status(200).json({
+      vulnerabilities,
+    });
+  } catch (error) {
+    console.error("PR_VULNERABILITY_ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to analyze vulnerabilities",
+    });
   }
-);
+});
 
 // POST https://aegis-backend-v2-2.onrender.com/api/github/analyze/risk-score
-router.post(
-  "/analyze/risk-score",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const userId = req.auth?.id;
+router.post("/analyze/risk-score", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.auth?.id;
 
-      if (!userId) {
-        return res.status(401).json({
-          message: "Unauthorized",
-        });
-      }
-
-      const { owner, repo, pullNumber } = req.body;
-
-      const prData = await getPullRequestDetails(
-        userId,
-        owner,
-        repo,
-        pullNumber
-      );
-
-      const riskAnalysis =
-        await generatePRRiskScore(prData);
-
-      return res.status(200).json({
-        risk: riskAnalysis,
-      });
-    } catch (error) {
-      console.error("PR_RISK_SCORE_ERROR:", error);
-
-      return res.status(500).json({
-        message: "Failed to generate risk score",
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
       });
     }
+
+    const { owner, pullNumber } = req.body;
+    const { repo } = req.body;
+    const prData = await getPullRequestDetails(userId, owner, repo, pullNumber);
+
+    const riskAnalysis = await generatePRRiskScore(prData);
+
+    return res.status(200).json({
+      risk: riskAnalysis,
+    });
+  } catch (error) {
+    console.error("PR_RISK_SCORE_ERROR:", error);
+
+    return res.status(500).json({
+      message: "Failed to generate risk score",
+    });
   }
-);
-
-
+});
 
 export default router;
 
