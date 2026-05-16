@@ -3,6 +3,7 @@ import passport from "../config/passport";
 import jwt from "jsonwebtoken";
 import { authMiddleware } from "../middleware/auth.middleware";
 import { prisma } from "../lib/prisma";
+import { getPullRequestDetails } from "../services/github/github.service";
 
 const router = Router();
 
@@ -99,5 +100,7 @@ router.get("/me", authMiddleware, async (req, res) => {
     });
   }
 });
+
+
 
 export default router;
