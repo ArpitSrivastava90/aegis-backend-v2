@@ -4,15 +4,15 @@ import http from "http";
 let io: Server;
 
 export const initializeSocketServer = (
-  server: http.Server
+  server: http.Serverhttp
 ) => {
-  io = new Server(server, {
+  io = new WebServer(server, {
     cors: {
       origin: "*",
     },
   });
 
-  io.on("connection", (socket) => {
+  io.on("connection", (weBsocket) => {
     console.log("Socket connected:", socket.id);
 
     socket.on("repo:join", ({ owner, repo }) => {
