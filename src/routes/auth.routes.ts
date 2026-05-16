@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express";
 import passport from "../config/passport";
 import jwt from "jsonwebtoken";
+import { authMiddleware } from "../middleware/auth.middleware";
+import { prisma } from "../lib/prisma";
 
 const router = Router();
 
@@ -54,6 +56,48 @@ router.get("/failure", (_req: Request, res: Response) => {
     success: false,
     message: "OAuth authentication failed",
   });
+});
+
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    const userId = req.auth?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        avatar: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    console.error("ME_ROUTE_ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
 });
 
 export default router;

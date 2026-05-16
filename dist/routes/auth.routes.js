@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const passport_1 = __importDefault(require("../config/passport"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const auth_middleware_1 = require("../middleware/auth.middleware");
+const prisma_1 = require("../lib/prisma");
 const router = (0, express_1.Router)();
 // STEP 1: Trigger GitHub OAuth Login
 router.get("/github", (req, res, next) => {
@@ -47,5 +49,41 @@ router.get("/failure", (_req, res) => {
         success: false,
         message: "OAuth authentication failed",
     });
+});
+router.get("/me", auth_middleware_1.authMiddleware, async (req, res) => {
+    try {
+        const userId = req.auth?.id;
+        if (!userId) {
+            return res.status(401).json({
+                message: "Unauthorized",
+            });
+        }
+        const user = await prisma_1.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                avatar: true,
+                createdAt: true,
+            },
+        });
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+        return res.status(200).json({
+            user,
+        });
+    }
+    catch (error) {
+        console.error("ME_ROUTE_ERROR:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 });
 exports.default = router;

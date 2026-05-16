@@ -8,34 +8,78 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String         @id @default(cuid())
+  email         String         @unique
   name          String?
   avatar        String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
-  // Relationships
-  accounts      Account[]    
-  vaultItems    VaultItem[]  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Auth Accounts
+  accounts      Account[]
+
+  // Product Integrations
+  integrations  Integration[]
+
+  // Features
+  vaultItems    VaultItem[]
   uptimeChecks  UptimeCheck[]
   notes         Note[]
 }
 
 model Account {
-  id                String  @id @default(cuid())
+  id                String   @id @default(cuid())
+
   userId            String
-  type              String  
-  provider          String  
-  providerAccountId String  
-  refresh_token     String? 
-  access_token      String? 
+
+  type              String
+  provider          String
+  providerAccountId String
+
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
-  
+
+  createdAt         DateTime @default(now())
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
+
+model Integration {
+  id                String   @id @default(cuid())
+
+  userId            String
+
+  provider          String
+  providerAccountId String?
+
+  accessToken       String?
+  refreshToken      String?
+
+  scopes            String?
+  status            String   @default("connected")
+
+  username          String?
+  email             String?
+  avatar            String?
+
+  metadata          Json?
+
+  connectedAt       DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([provider])
+
+  @@unique([userId, provider])
+}
+
+
 
 model VaultItem {
   id          String   @id @default(cuid())

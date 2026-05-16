@@ -1,6 +1,6 @@
 import passport, { Profile } from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
-import { prisma } from "../lib/prisma"; 
+import { prisma } from "../lib/prisma";
 
 // Passport’s job here is:
 
@@ -16,7 +16,7 @@ passport.use(
       clientID: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
       callbackURL: process.env.GITHUB_CALLBACK_URL!,
-      scope: ["user:email"],
+      scope: ["user:email", "repo"],
     },
     async (
       accessToken: string,
@@ -73,6 +73,41 @@ passport.use(
             providerAccountId: profile.id,
             access_token: accessToken,
             refresh_token: refreshToken,
+          },
+        });
+        await prisma.integration.upsert({
+          where: {
+            userId_provider: {
+              userId: user.id,
+              provider: "github",
+            },
+          },
+
+          update: {
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+
+            username: profile.username,
+            email: email,
+            avatar: profile.photos?.[0]?.value,
+
+            status: "connected",
+          },
+
+          create: {
+            userId: user.id,
+
+            provider: "github",
+            providerAccountId: profile.id,
+
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+
+            username: profile.username,
+            email: email,
+            avatar: profile.photos?.[0]?.value,
+
+            status: "connected",
           },
         });
 

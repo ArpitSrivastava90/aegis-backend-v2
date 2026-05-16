@@ -16,7 +16,7 @@ passport_1.default.use(new passport_github2_1.Strategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
     callbackURL: process.env.GITHUB_CALLBACK_URL,
-    scope: ["user:email"],
+    scope: ["user:email", "repo"],
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const email = profile.emails?.[0]?.value;
@@ -62,6 +62,33 @@ passport_1.default.use(new passport_github2_1.Strategy({
                 providerAccountId: profile.id,
                 access_token: accessToken,
                 refresh_token: refreshToken,
+            },
+        });
+        await prisma_1.prisma.integration.upsert({
+            where: {
+                userId_provider: {
+                    userId: user.id,
+                    provider: "github",
+                },
+            },
+            update: {
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+                username: profile.username,
+                email: email,
+                avatar: profile.photos?.[0]?.value,
+                status: "connected",
+            },
+            create: {
+                userId: user.id,
+                provider: "github",
+                providerAccountId: profile.id,
+                accessToken: accessToken,
+                refreshToken: refreshToken,
+                username: profile.username,
+                email: email,
+                avatar: profile.photos?.[0]?.value,
+                status: "connected",
             },
         });
         return done(null, user);
