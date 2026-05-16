@@ -12,6 +12,7 @@ const express_session_1 = __importDefault(require("express-session"));
 const passport_1 = __importDefault(require("./config/passport"));
 const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
 const prisma_1 = require("./lib/prisma");
+const github_routes_1 = __importDefault(require("./routes/github.routes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -35,6 +36,7 @@ app.get("/health", (req, res) => {
     res.status(200).json({ status: "Aegis Backend is Healthy 🛡️" });
 });
 app.use("/api/auth", auth_routes_1.default);
+app.use("/api/github", github_routes_1.default);
 app.listen(PORT, () => {
     console.log(`🛡️  Aegis running on http://localhost:${PORT}`);
 });

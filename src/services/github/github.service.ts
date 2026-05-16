@@ -1,0 +1,34 @@
+import { prisma } from "../../lib/prisma";
+
+export const getGithubRepositories = async (userId: string) => {
+  const integration = await prisma.integration.findUnique({
+    where: {
+      userId_provider: {
+        userId,
+        provider: "github",
+      },
+    },
+  });
+
+  if (!integration || !integration.accessToken) {
+    throw new Error("GitHub integration not found");
+  }
+
+  const response = await fetch(
+    "https://api.github.com/user/repos",
+    {
+      headers: {
+        Authorization: `Bearer ${integration.accessToken}`,
+        Accept: "application/vnd.github+json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch repositories");
+  }
+
+  const repos = await response.json();
+
+  return repos;
+};

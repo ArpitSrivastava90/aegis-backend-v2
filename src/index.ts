@@ -7,7 +7,7 @@ import session from "express-session";
 import passport from "./config/passport";
 import authRoutes from "./routes/auth.routes";
 import { prisma } from "./lib/prisma";
-
+import githubRoutes from "./routes/github.routes"
 dotenv.config();
 
 const app: Application = express();
@@ -17,6 +17,7 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
+
 
 // Session — only needed to bridge OAuth round trip
 app.use(session({
@@ -37,6 +38,8 @@ app.get("/health", (req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/github", githubRoutes);
+
 
 app.listen(PORT, () => {
   console.log(`🛡️  Aegis running on http://localhost:${PORT}`);

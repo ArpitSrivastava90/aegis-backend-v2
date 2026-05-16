@@ -11,12 +11,9 @@ const prisma_1 = require("../lib/prisma");
 const router = (0, express_1.Router)();
 // STEP 1: Trigger GitHub OAuth Login
 router.get("/github", (req, res, next) => {
-    // Save mobile app's current Expo URL in session before passport takes over
-    if (req.query.redirectUrl) {
-        req.session.mobileRedirectUrl = req.query.redirectUrl;
-    }
     passport_1.default.authenticate("github", {
         scope: ["user:email"],
+        state: req.query.state,
     })(req, res, next);
 });
 // STEP 2: GitHub OAuth Callback
@@ -32,11 +29,7 @@ router.get("/github/callback", passport_1.default.authenticate("github", {
             name: user.name,
             avatar: user.avatar,
         }, process.env.JWT_SECRET, { expiresIn: "7d" });
-        // Read from session → fallback to env var for production builds
-        const redirectBase = req.session.mobileRedirectUrl ||
-            `${process.env.DEEP_LINK_SCHEME}auth/callback`;
-        // Clean up session
-        delete req.session.mobileRedirectUrl;
+        const redirectBase = req.query.state;
         return res.redirect(`${redirectBase}?token=${token}`);
     }
     catch (error) {
