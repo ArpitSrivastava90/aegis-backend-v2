@@ -76,9 +76,13 @@ ${prData}
 
   const result = await model.generateContent(prompt);
 
-  const text = result.response.text();
+  const text = result.response
+  .text()
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
 
-  return JSON.parse(text);
+return JSON.parse(text);
 };
 
 export const generatePRRiskScore = async (
@@ -120,7 +124,11 @@ ${prData}
 
   const result = await model.generateContent(prompt);
 
-  const text = result.response.text();
+  const text = result.response
+  .text()
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
 
-  return JSON.parse(text);
+return JSON.parse(text);
 };

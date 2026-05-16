@@ -68,7 +68,11 @@ PR Diff:
 ${prData}
 `;
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = result.response
+        .text()
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
     return JSON.parse(text);
 };
 exports.analyzePRVulnerabilities = analyzePRVulnerabilities;
@@ -107,7 +111,11 @@ PR Diff:
 ${prData}
 `;
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
+    const text = result.response
+        .text()
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
     return JSON.parse(text);
 };
 exports.generatePRRiskScore = generatePRRiskScore;
