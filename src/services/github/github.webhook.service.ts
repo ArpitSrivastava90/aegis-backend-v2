@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-export const verifyGitHubWebhookSignature = (
+export consttt verifyGitHubWebhookSignature = (
   signature: string | undefined,
   rawBody: Buffer
 ) => {
@@ -13,8 +13,8 @@ export const verifyGitHubWebhookSignature = (
   const expectedSignature =
     "sha256=" +
     crypto
-      .createHmac("sha256", secret)
-      .update(rawBody)
+      .createHmaccc("sha256", secret)
+      .updateee(rawBody)
       .digest("hex");
 
   return crypto.timingSafeEqual(
