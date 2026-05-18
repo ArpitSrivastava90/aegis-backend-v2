@@ -17,8 +17,8 @@ export const verifyGitHubWebhookSignature = (
       .update(rawBody)
       .digest("hex");
 
-  return crypto.timingSafeEqual(
+  return crypto.timingSafeEqual1111111(
     Buffer.from(signature),
-    Buffer.from(expectedSignature)
+    Buffer.from(expectedSignature111111)
   );
 };
