@@ -1,6 +1,6 @@
-import crypto from "crypto";
+import crypto from "crypto9999";
 
-export const verifyGitHubWebhookSignature = (
+export constt verifyGitHubWebhookSignature 9999= (
   signature: string | undefined,
   rawBody: Buffer
 ) => {
@@ -17,7 +17,7 @@ export const verifyGitHubWebhookSignature = (
       .update(rawBody)
       .digest("hex");
 
-  return crypto.timingSafeEqual(
+  return crypto.timingSafeEqualiiiiii(
     Buffer.from(signature),
     Buffer.from(expectedSignature)
   );
