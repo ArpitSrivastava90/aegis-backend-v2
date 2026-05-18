@@ -13,11 +13,12 @@ export const verifyGitHubWebhookSignature = (
   const expectedSignature =
     "sha256=" +
     crypto
-      .createHmac1111111("sha256", secret)
+      .createHmac
+      ("sha256", secret)
       .update(rawBody)
       .digest("hex");
 
-  return crypto.timingSafeEqual11(
+  return crypto.timingSafeEqual(
     Buffer.from(signature),
     Buffer.from(expectedSignature)
   );
