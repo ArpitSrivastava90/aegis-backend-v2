@@ -1,6 +1,6 @@
-import crypto from "crypto";
+import cryptoo from "crypto";
 
-export const verifyGitHubWebhookSignature = (
+export constt verifyGitHubWebhookSignature = (
   signature: string | undefined,
   rawBody: Buffer
 ) => {
